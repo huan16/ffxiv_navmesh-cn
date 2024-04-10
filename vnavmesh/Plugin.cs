@@ -48,20 +48,20 @@ public sealed class Plugin : IDalamudPlugin
         Service.CommandManager.AddHandler("/vnavmesh", new(OnCommand)
         {
             HelpMessage = """
-            Opens the debug menu.
-            /vnavmesh moveto <X> <Y> <Z> → move to raw coordinates
-            /vnavmesh movedir <X> <Y> <Z> → move this many units over (relative to player facing)
-            /vnavmesh movetarget → move to target's position
-            /vnavmesh moveflag → move to flag position
-            /vnavmesh flyto <X> <Y> <Z> → fly to raw coordinates
-            /vnavmesh flydir <X> <Y> <Z> → fly this many units over (relative to player facing)
-            /vnavmesh flytarget → fly to target's position
-            /vnavmesh flyflag → fly to flag position
-            /vnavmesh stop → stop all movement
-            /vnavmesh reload → reload current territory's navmesh from cache
-            /vnavmesh rebuild → rebuild current territory's navmesh from scratch
-            /vnavmesh aligncamera → toggle aligning camera to movement direction
-            /vnavmesh dtr → toggle dtr status
+            打开调试窗口
+            /vnavmesh moveto <X> <Y> <Z> → 移动至指定原始坐标
+            /vnavmesh movedir <X> <Y> <Z> → 移动相对单位长度 (基于当前面向)
+            /vnavmesh movetarget → 移动至目标位置
+            /vnavmesh moveflag → 移动至标点位置
+            /vnavmesh flyto <X> <Y> <Z> → 飞行至指定原始坐标
+            /vnavmesh flydir <X> <Y> <Z> → 飞行相对单位长度 (基于当前面向)
+            /vnavmesh flytarget → 飞行至目标位置
+            /vnavmesh flyflag → 飞行至标点位置
+            /vnavmesh stop → 停止移动
+            /vnavmesh reload → 重载当前区域的寻路数据 (缓存)
+            /vnavmesh rebuild → 重构当前区域的寻路数据
+            /vnavmesh aligncamera → 将游戏摄像头视角与当前移动方向保持平行
+            /vnavmesh dtr → 开启/关闭服务器信息栏显示
             """,
             ShowInHelp = true,
         });

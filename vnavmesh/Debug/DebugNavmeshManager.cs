@@ -48,43 +48,43 @@ class DebugNavmeshManager : IDisposable
         else
         {
             ImGui.SetNextItemWidth(100);
-            if (ImGui.Button("Reload"))
+            if (ImGui.Button("重载"))
                 _manager.Reload(true);
             ImGui.SameLine();
-            if (ImGui.Button("Rebuild"))
+            if (ImGui.Button("重构"))
                 _manager.Reload(false);
         }
         ImGui.SameLine();
         ImGui.TextUnformatted(_manager.CurrentKey);
-        ImGui.TextUnformatted($"Num pathfinding tasks: {(_manager.PathfindInProgress ? 1 : 0)} in progress, {_manager.NumQueuedPathfindRequests} queued");
+        ImGui.TextUnformatted($"寻路任务:\n正在执行: {(_manager.PathfindInProgress ? 1 : 0)} 正在排队: {_manager.NumQueuedPathfindRequests}");
 
         if (_manager.Navmesh == null || _manager.Query == null)
             return;
 
         var player = Service.ClientState.LocalPlayer;
         var playerPos = player?.Position ?? default;
-        ImGui.TextUnformatted($"Player pos: {playerPos}");
-        if (ImGui.Button("Set target to current pos"))
+        ImGui.TextUnformatted($"玩家位置: {playerPos}");
+        if (ImGui.Button("将目的地设为当前位置"))
             _target = player?.Position ?? default;
         ImGui.SameLine();
-        if (ImGui.Button("Set target to target pos"))
+        if (ImGui.Button("将目的地设为目标位置"))
             _target = player?.TargetObject?.Position ?? default;
         ImGui.SameLine();
-        if (ImGui.Button("Set target to flag position"))
+        if (ImGui.Button("将目的地设为标点位置"))
             _target = MapUtils.FlagToPoint(_manager.Query) ?? default;
         ImGui.SameLine();
-        ImGui.TextUnformatted($"Current target: {_target}");
+        ImGui.TextUnformatted($"当前目标: {_target}");
 
-        ImGui.Checkbox("Show mesh status in DTR Bar", ref _dtr.ShowDtrBar);
-        ImGui.Checkbox("Allow movement", ref _path.MovementAllowed);
-        ImGui.Checkbox("Align camera to movement direction", ref _path.AlignCamera);
-        ImGui.Checkbox("Auto load mesh when changing zone", ref _manager.AutoLoad);
-        ImGui.Checkbox("Use raycasts", ref _manager.UseRaycasts);
-        ImGui.Checkbox("Use string pulling", ref _manager.UseStringPulling);
-        if (ImGui.Button("Pathfind to target using navmesh"))
+        ImGui.Checkbox("在服务器信息栏显示插件状态", ref _dtr.ShowDtrBar);
+        ImGui.Checkbox("运行移动", ref _path.MovementAllowed);
+        ImGui.Checkbox("使摄像头始终平行于移动方向", ref _path.AlignCamera);
+        ImGui.Checkbox("切换区域时自动重载数据", ref _manager.AutoLoad);
+        ImGui.Checkbox("使用 Raycasts", ref _manager.UseRaycasts);
+        ImGui.Checkbox("使用 String Pulling", ref _manager.UseStringPulling);
+        if (ImGui.Button("步行移动至目的地"))
             _asyncMove.MoveTo(_target, false);
         ImGui.SameLine();
-        if (ImGui.Button("Pathfind to target using volume"))
+        if (ImGui.Button("飞行移动至目的地"))
             _asyncMove.MoveTo(_target, true);
 
         // draw current path
@@ -118,9 +118,9 @@ class DebugNavmeshManager : IDisposable
     private void DrawPosition(string tag, Vector3 position)
     {
         _manager.Navmesh!.Mesh.CalcTileLoc(position.SystemToRecast(), out var tileX, out var tileZ);
-        _tree.LeafNode($"{tag} position: {position:f3}, tile: {tileX}x{tileZ}, poly: {_manager.Query!.FindNearestMeshPoly(position):X}");
+        _tree.LeafNode($"{tag} 位置: {position:f3}, 格: {tileX}x{tileZ}, poly: {_manager.Query!.FindNearestMeshPoly(position):X}");
         var voxel = _manager.Query.FindNearestVolumeVoxel(position);
-        if (_tree.LeafNode($"{tag} voxel: {voxel:X}###{tag}voxel").SelectedOrHovered && voxel != VoxelMap.InvalidVoxel)
+        if (_tree.LeafNode($"{tag} 体素: {voxel:X}###{tag}voxel").SelectedOrHovered && voxel != VoxelMap.InvalidVoxel)
             _debugVoxelMap?.VisualizeVoxel(voxel);
     }
 
