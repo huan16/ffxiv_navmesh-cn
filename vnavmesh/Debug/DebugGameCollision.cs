@@ -12,7 +12,6 @@ using ImGuiNET;
 using Navmesh.Render;
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
 using Vector4 = System.Numerics.Vector4;
 
 namespace Navmesh.Debug;
@@ -41,7 +40,7 @@ public unsafe class DebugGameCollision : IDisposable
     public DebugGameCollision(DebugDrawer dd)
     {
         _dd = dd;
-        _meshDynamicData = new(dd.RenderContext, 1024 * 1024, 1024 * 1024, 128 * 1024, true);
+        _meshDynamicData = new(dd.RenderContext, 4 * 1024 * 1024, 4 * 1024 * 1024, 512 * 1024, true);
 
         foreach (var s in Framework.Instance()->BGCollisionModule->SceneManager->Scenes)
         {
@@ -85,8 +84,6 @@ public unsafe class DebugGameCollision : IDisposable
             DrawSceneRaycasts(s, i);
             ++i;
         }
-
-        DrawVisualizers();
     }
 
     public void DrawVisualizers()
@@ -215,7 +212,7 @@ public unsafe class DebugGameCollision : IDisposable
     private void DrawSceneColliders(Scene* s, int index)
     {
         using var n = _tree.Node($"Scene {index}: {s->NumColliders} colliders, {s->NumLoading} loading, streaming={SphereStr(s->StreamingSphere)}###scene_{index}");
-        if (n.SelectedOrHovered)
+        if (n.SelectedOrHovered || Service.Config.ForceShowGameCollision)
             foreach (var coll in s->Colliders)
                 if (FilterCollider(coll))
                     VisualizeCollider(coll, _materialId, _materialMask);
@@ -707,4 +704,3 @@ public unsafe class DebugGameCollision : IDisposable
         return _raycastHook!.Original(self, result, layerMask, param);
     }
 }
-

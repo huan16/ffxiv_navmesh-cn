@@ -1,4 +1,5 @@
 ﻿using Dalamud.Common;
+using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
@@ -32,6 +33,8 @@ public sealed class Plugin : IDalamudPlugin
         FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
 
         dalamud.Create<Service>();
+        Service.Config.Load(dalamud.ConfigFile);
+        Service.Config.Modified += () => Service.Config.Save(dalamud.ConfigFile);
 
         _navmeshManager = new(new($"{dalamud.ConfigDirectory.FullName}/meshcache"));
         _followPath = new(_navmeshManager);
@@ -43,9 +46,15 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(_wndMain);
         //_wndMain.IsOpen = true;
 
-        dalamud.UiBuilder.Draw += WindowSystem.Draw;
+        dalamud.UiBuilder.Draw += () =>
+        {
+            _wndMain.StartFrame();
+            WindowSystem.Draw();
+            _wndMain.EndFrame();
+        };
         dalamud.UiBuilder.OpenConfigUi += () => _wndMain.IsOpen = true;
-        Service.CommandManager.AddHandler("/vnavmesh", new(OnCommand)
+
+        var cmd = new CommandInfo(OnCommand)
         {
             HelpMessage = """
             打开调试窗口
@@ -62,9 +71,12 @@ public sealed class Plugin : IDalamudPlugin
             /vnavmesh rebuild → 重构当前区域的寻路数据
             /vnavmesh aligncamera → 将游戏摄像头视角与当前移动方向保持平行
             /vnavmesh dtr → 开启/关闭服务器信息栏显示
+            /vnav collider → 启用碰撞显示
             """,
             ShowInHelp = true,
-        });
+        };
+        Service.CommandManager.AddHandler("/vnav", cmd);
+        Service.CommandManager.AddHandler("/vnavmesh", cmd); // legacy
 
         Service.Framework.Update += OnUpdate;
     }
@@ -73,6 +85,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         Service.Framework.Update -= OnUpdate;
 
+        Service.CommandManager.RemoveHandler("/vnav");
         Service.CommandManager.RemoveHandler("/vnavmesh");
         WindowSystem.RemoveAllWindows();
 
@@ -144,10 +157,16 @@ public sealed class Plugin : IDalamudPlugin
                 _followPath.Stop();
                 break;
             case "aligncamera":
-                _followPath.AlignCamera ^= true;
+                Service.Config.AlignCameraToMovement ^= true;
+                Service.Config.NotifyModified();
                 break;
             case "dtr":
-                _dtrProvider.ShowDtrBar ^= true;
+                Service.Config.EnableDTR ^= true;
+                Service.Config.NotifyModified();
+                break;
+            case "collider":
+                Service.Config.ForceShowGameCollision ^= true;
+                Service.Config.NotifyModified();
                 break;
         }
     }

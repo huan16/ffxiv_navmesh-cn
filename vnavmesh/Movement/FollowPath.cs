@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIVClientStructs.FFXIV.Client.Game;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -7,7 +8,6 @@ namespace Navmesh.Movement;
 public class FollowPath : IDisposable
 {
     public bool MovementAllowed = true;
-    public bool AlignCamera = false;
     public bool IgnoreDeltaY = false;
     public float Tolerance = 0.25f;
     public List<Vector3> Waypoints = new();
@@ -15,6 +15,7 @@ public class FollowPath : IDisposable
     private NavmeshManager _manager;
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
+    private DateTime _nextJump;
 
     public FollowPath(NavmeshManager manager)
     {
@@ -57,7 +58,19 @@ public class FollowPath : IDisposable
             OverrideAFK.ResetTimers();
             _movement.Enabled = MovementAllowed;
             _movement.DesiredPosition = Waypoints[0];
-            _camera.Enabled = AlignCamera;
+            if (_movement.DesiredPosition.Y > player.Position.Y && !Service.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.InFlight] && !IgnoreDeltaY) //Only do this bit if on a flying path
+            {
+                // walk->fly transition (TODO: reconsider?)
+                if (Service.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Mounted])
+                    ExecuteJump(); // Spam jump to take off
+                else
+                {
+                    _movement.Enabled = false; // Don't move, since it'll just run on the spot
+                    return;
+                }
+            }
+
+            _camera.Enabled = Service.Config.AlignCameraToMovement;
             _camera.SpeedH = _camera.SpeedV = 360.Degrees();
             _camera.DesiredAzimuth = Angle.FromDirectionXZ(_movement.DesiredPosition - player.Position) + 180.Degrees();
             _camera.DesiredAltitude = -30.Degrees();
@@ -65,6 +78,15 @@ public class FollowPath : IDisposable
     }
 
     public void Stop() => Waypoints.Clear();
+
+    private unsafe void ExecuteJump()
+    {
+        if (DateTime.Now >= _nextJump)
+        {
+            ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
+            _nextJump = DateTime.Now.AddMilliseconds(100);
+        }
+    }
 
     public void Move(List<Vector3> waypoints, bool ignoreDeltaY)
     {

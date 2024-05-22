@@ -75,31 +75,14 @@ class DebugNavmeshManager : IDisposable
         ImGui.SameLine();
         ImGui.TextUnformatted($"当前目标: {_target}");
 
-        ImGui.Checkbox("在服务器信息栏显示插件状态", ref _dtr.ShowDtrBar);
-        ImGui.Checkbox("运行移动", ref _path.MovementAllowed);
-        ImGui.Checkbox("使摄像头始终平行于移动方向", ref _path.AlignCamera);
-        ImGui.Checkbox("切换区域时自动重载数据", ref _manager.AutoLoad);
+        ImGui.Checkbox("允许移动", ref _path.MovementAllowed);
         ImGui.Checkbox("使用 Raycasts", ref _manager.UseRaycasts);
         ImGui.Checkbox("使用 String Pulling", ref _manager.UseStringPulling);
-        if (ImGui.Button("步行移动至目的地"))
+        if (ImGui.Button("使用导航寻路至目标"))
             _asyncMove.MoveTo(_target, false);
         ImGui.SameLine();
         if (ImGui.Button("飞行移动至目的地"))
             _asyncMove.MoveTo(_target, true);
-
-        // draw current path
-        if (player != null)
-        {
-            var from = playerPos;
-            var color = 0xff00ff00;
-            foreach (var to in _path.Waypoints)
-            {
-                _dd.DrawWorldLine(from, to, color);
-                _dd.DrawWorldPointFilled(to, 3, 0xff0000ff);
-                from = to;
-                color = 0xff00ffff;
-            }
-        }
 
         DrawPosition("Player", playerPos);
         DrawPosition("Target", _target);
