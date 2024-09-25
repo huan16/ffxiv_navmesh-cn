@@ -1,4 +1,4 @@
-﻿using Dalamud.Common;
+using Dalamud.Common;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
@@ -21,7 +21,7 @@ public sealed class Plugin : IDalamudPlugin
     private MainWindow _wndMain;
     private IPCProvider _ipcProvider;
 
-    public Plugin(DalamudPluginInterface dalamud)
+    public Plugin(IDalamudPluginInterface dalamud)
     {
         if (!dalamud.ConfigDirectory.Exists)
             dalamud.ConfigDirectory.Create();
@@ -58,22 +58,25 @@ public sealed class Plugin : IDalamudPlugin
         var cmd = new CommandInfo(OnCommand)
         {
             HelpMessage = """
-            打开调试窗口
-            /vnavmesh moveto <X> <Y> <Z> → 移动至指定原始坐标
-            /vnavmesh movedir <X> <Y> <Z> → 移动相对单位长度 (基于当前面向)
-            /vnavmesh movetarget → 移动至目标位置
-            /vnavmesh moveflag → 移动至标点位置
-            /vnavmesh flyto <X> <Y> <Z> → 飞行至指定原始坐标
-            /vnavmesh flydir <X> <Y> <Z> → 飞行相对单位长度 (基于当前面向)
-            /vnavmesh flytarget → 飞行至目标位置
-            /vnavmesh flyflag → 飞行至标点位置
-            /vnavmesh stop → 停止移动
-            /vnavmesh reload → 重载当前区域的寻路数据 (缓存)
-            /vnavmesh rebuild → 重构当前区域的寻路数据
-            /vnavmesh aligncamera → 将游戏摄像头视角与当前移动方向保持平行
-            /vnavmesh dtr → 开启/关闭服务器信息栏显示
-            /vnav collider → 启用碰撞显示
+            Opens the debug menu.
+            /vnav moveto <X> <Y> <Z> → 移动至该坐标
+            /vnav movedir <X> <Y> <Z> → 根据当前面向移动指定单位距离
+            /vnav movetarget → 移动至当前目标位置
+            /vnav moveflag → 移动至当前标点位置
+            /vnav flyto <X> <Y> <Z> → 飞行至该坐标
+            /vnav flydir <X> <Y> <Z> → 根据当前面向移动指定单位距离
+            /vnav flytarget → 飞行至当前目标位置
+            /vnav flyflag → 飞行至当前标点位置
+            /vnav stop → 停止所有导航移动任务
+            /vnav reload → 从缓存中重新加载本区域导航数据
+            /vnav rebuild → 从游戏中重新构建本区域导航数据
+            /vnav aligncamera → 将当前面向对齐移动方向
+            /vnav aligncamera true|yes|enable → 启用移动时将当前面向对齐移动方向
+            /vnav aligncamera false|no|disable → 禁用移动时将当前面向对齐移动方向
+            /vnav dtr → 开关服务器状态栏插件状态显示
+            /vnav collider → 开关调试性碰撞显示
             """,
+            
             ShowInHelp = true,
         };
         Service.CommandManager.AddHandler("/vnav", cmd);
@@ -159,7 +162,10 @@ public sealed class Plugin : IDalamudPlugin
                 _navmeshManager.CancelAllQueries();
                 break;
             case "aligncamera":
-                Service.Config.AlignCameraToMovement ^= true;
+                if (args.Length == 1)
+                    Service.Config.AlignCameraToMovement ^= true;
+                else 
+                    AlignCameraCommand(args[1]);
                 Service.Config.NotifyModified();
                 break;
             case "dtr":
@@ -192,5 +198,15 @@ public sealed class Plugin : IDalamudPlugin
         if (pt == null)
             return;
         _asyncMove.MoveTo(pt.Value, fly);
+    }
+
+    private void AlignCameraCommand(string arg)
+    {
+        arg = arg.ToLower();
+        if (arg == "true" || arg == "yes" || arg == "enable")
+            Service.Config.AlignCameraToMovement = true;
+        else if (arg == "false" || arg == "no" || arg == "disable")
+            Service.Config.AlignCameraToMovement = false;
+        return;
     }
 }

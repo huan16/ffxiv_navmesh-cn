@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
+using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -235,7 +235,7 @@ public class NavmeshManager : IDisposable
         // write results to cache
         {
             Service.Log.Debug($"写入缓存: {cache.FullName}");
-            using var stream = cache.OpenWrite();
+            using var stream = cache.Open(FileMode.Create, FileAccess.Write, FileShare.None);
             using var writer = new BinaryWriter(stream);
             builder.Navmesh.Serialize(writer);
         }

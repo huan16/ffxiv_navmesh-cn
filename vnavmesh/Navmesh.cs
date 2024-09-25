@@ -11,7 +11,7 @@ namespace Navmesh;
 public record class Navmesh(int CustomizationVersion, DtNavMesh Mesh, VoxelMap? Volume)
 {
     public static readonly uint Magic = 0x444D564E; // 'NVMD'
-    public static readonly uint Version = 13;
+    public static readonly uint Version = 14;
 
     // throws an exception on failure
     public static Navmesh Deserialize(BinaryReader reader, int expectedCustomizationVersion)
@@ -25,8 +25,8 @@ public record class Navmesh(int CustomizationVersion, DtNavMesh Mesh, VoxelMap? 
             throw new Exception("Outdated customization version");
 
         using var compressedReader = new BinaryReader(new BrotliStream(reader.BaseStream, CompressionMode.Decompress, true));
-        var mesh = DeserializeMesh(reader);
-        var volume = DeserializeVolume(reader);
+        var mesh = DeserializeMesh(compressedReader);
+        var volume = DeserializeVolume(compressedReader);
         return new(customizationVersion, mesh, volume);
     }
 
@@ -37,8 +37,8 @@ public record class Navmesh(int CustomizationVersion, DtNavMesh Mesh, VoxelMap? 
         writer.Write(CustomizationVersion);
 
         using var compressedWriter = new BinaryWriter(new BrotliStream(writer.BaseStream, CompressionLevel.Optimal, true));
-        SerializeMesh(writer, Mesh);
-        SerializeVolume(writer, Volume);
+        SerializeMesh(compressedWriter, Mesh);
+        SerializeVolume(compressedWriter, Volume);
     }
 
     private static DtNavMesh DeserializeMesh(BinaryReader reader)
