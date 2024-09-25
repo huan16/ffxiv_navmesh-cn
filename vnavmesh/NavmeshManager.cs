@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
+using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,7 +57,7 @@ public class NavmeshManager : IDisposable
             if (!_loadTask.IsCompleted)
                 return; // async mesh load task is still in progress, do nothing; note that we don't want to start multiple concurrent tasks on rapid transitions
 
-            Service.Log.Information($"Finishing transition to '{_lastKey}'");
+            Service.Log.Information($"完成向 '{_lastKey}' 的转换");
             try
             {
                 _navmesh = _loadTask.Result;
@@ -67,7 +67,7 @@ public class NavmeshManager : IDisposable
             }
             catch (Exception ex)
             {
-                Service.Log.Error($"Failed to build navmesh: {ex}");
+                Service.Log.Error($"构建失败: {ex}");
             }
             _loadTask.Dispose();
             _loadTask = null;
@@ -84,7 +84,7 @@ public class NavmeshManager : IDisposable
                 curKey = ""; // just unload existing mesh
             }
 
-            Service.Log.Info($"Starting transition from '{_lastKey}' to '{curKey}'");
+            Service.Log.Info($"开始从 '{_lastKey}' 转换至 '{curKey}'");
             _lastKey = curKey;
             Reload(true);
             return; // mesh load is now in progress
@@ -112,7 +112,7 @@ public class NavmeshManager : IDisposable
     {
         if (_loadTask != null)
         {
-            Service.Log.Error($"Can't initiate reload - another task is already in progress");
+            Service.Log.Error("无法开始重加载 —— 仍有另一项任务正在进行中");
             return false; // some task is already in progress...
         }
 
@@ -133,7 +133,7 @@ public class NavmeshManager : IDisposable
         var query = _query;
         if (_queryCancelSource == null || query == null)
         {
-            Service.Log.Error($"Can't initiate query - navmesh is not loaded");
+            Service.Log.Error($"无法查询, 数据构建未完成");
             return null;
         }
 
@@ -153,7 +153,7 @@ public class NavmeshManager : IDisposable
     {
         if (_queryCancelSource == null)
         {
-            Service.Log.Error($"Can't cancel queries - navmesh is not loaded");
+            Service.Log.Error($"无法查询, 数据未加载");
             return;
         }
 
@@ -208,14 +208,14 @@ public class NavmeshManager : IDisposable
         {
             try
             {
-                Service.Log.Debug($"Loading cache: {cache.FullName}");
+                Service.Log.Debug($"加载缓存: {cache.FullName}");
                 using var stream = cache.OpenRead();
                 using var reader = new BinaryReader(stream);
                 return Navmesh.Deserialize(reader, customization.Version);
             }
             catch (Exception ex)
             {
-                Service.Log.Debug($"Failed to load cache: {ex}");
+                Service.Log.Debug($"加载缓存失败: {ex}");
             }
         }
 
@@ -234,7 +234,7 @@ public class NavmeshManager : IDisposable
 
         // write results to cache
         {
-            Service.Log.Debug($"Writing cache: {cache.FullName}");
+            Service.Log.Debug($"写入缓存: {cache.FullName}");
             using var stream = cache.Open(FileMode.Create, FileAccess.Write, FileShare.None);
             using var writer = new BinaryWriter(stream);
             builder.Navmesh.Serialize(writer);
