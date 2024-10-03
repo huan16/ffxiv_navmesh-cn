@@ -88,10 +88,10 @@ class DebugNavmeshManager : IDisposable
         if (ImGui.Button("飞行移动至目的地"))
             _asyncMove.MoveTo(_target, true);
 
-        DrawPosition("Player", playerPos);
-        DrawPosition("Target", _target);
-        DrawPosition("Flag", MapUtils.FlagToPoint(_manager.Query) ?? default);
-        DrawPosition("Floor", _manager.Query.FindPointOnFloor(playerPos) ?? default);
+        DrawPosition("玩家", playerPos);
+        DrawPosition("目标", _target);
+        DrawPosition("标点", MapUtils.FlagToPoint(_manager.Query) ?? default);
+        DrawPosition("地面", _manager.Query.FindPointOnFloor(playerPos) ?? default);
 
         _drawNavmesh ??= new(_manager.Navmesh.Mesh, _manager.Query.MeshQuery, _tree, _dd);
         _drawNavmesh.Draw();

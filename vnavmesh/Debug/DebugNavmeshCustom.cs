@@ -233,7 +233,7 @@ class DebugNavmeshCustom : IDisposable
                         if (inter == null)
                             continue;
 
-                        using var nt = _tree.Node($"Tile {x}x{z}");
+                        using var nt = _tree.Node($"层级 {x}x{z}");
                         if (!nt.Opened)
                             continue;
 
@@ -252,14 +252,14 @@ class DebugNavmeshCustom : IDisposable
                             debug.DrawPolyMeshDetail.Draw();
                         }
 
-                        using (var nhfc = _tree.Node("HF comparison"))
+                        using (var nhfc = _tree.Node("高度场比较"))
                         {
                             if (nhfc.Opened)
                             {
                                 debug.HFC ??= CompareHeightfields(x, z, _navmesh.Extractor!);
-                                _tree.LeafNode($"Old: {debug.HFC.Value.DurationOld:f3}");
-                                _tree.LeafNode($"New: {debug.HFC.Value.DurationNew:f3}");
-                                _tree.LeafNode($"Match: {debug.HFC.Value.Identical}");
+                                _tree.LeafNode($"旧: {debug.HFC.Value.DurationOld:f3}");
+                                _tree.LeafNode($"新: {debug.HFC.Value.DurationNew:f3}");
+                                _tree.LeafNode($"一致: {debug.HFC.Value.Identical}");
                             }
                         }
                     }

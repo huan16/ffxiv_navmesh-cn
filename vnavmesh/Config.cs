@@ -47,7 +47,7 @@ public class Config
         }
         catch (Exception e)
         {
-            Service.Log.Error($"Failed to save config to {file.FullName}: {e}");
+            Service.Log.Error($"保存配置文件至 {file.FullName} 时失败: {e}");
         }
     }
 
